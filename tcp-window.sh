@@ -31,8 +31,6 @@ cp /etc/sysctl.conf /etc/sysctl.conf.bak.$(date +%F-%T)
 
 cat >/etc/sysctl.conf<<EOF
 fs.file-max = 524288
-
-fs.file-max = 524288
 net.core.default_qdisc = fq
 net.core.somaxconn = 4096
 net.ipv4.tcp_max_syn_backlog = 4096
