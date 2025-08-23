@@ -8,6 +8,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jobs:
+          - { goos: linux, goarch: amd64, goamd64: v3, output: amd64-v3}
 
     steps:
     - name: Checkout code
@@ -16,19 +20,26 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.21'
+        go-version: '1.25'
+        check-latest: true
 
     - name: Install xcaddy
       run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 
     - name: Build Caddy with plugins
+      env:
+        GOOS: ${{matrix.jobs.goos}}
+        GOARCH: ${{matrix.jobs.goarch}}
+        GOAMD64: ${{matrix.jobs.goamd64}}
       run: |
         DATE=$(date +'%Y-%m-%d')
-        VERSION="v-monthly"
+        VERSION="$(curl -s "https://api.github.com/repos/caddyserver/caddy/releases/latest" | jq -r '.tag_name')"
         xcaddy build \
           --with github.com/caddyserver/forwardproxy
         mkdir -p dist
-        tar -czvf dist/caddy-${VERSION}.tar.gz caddy
+        mv caddy caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
+        tar -czvf dist/caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}-${VERSION}.tar.gz caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
+        rm caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
         echo "RELEASE_TAG=${VERSION}" >> $GITHUB_ENV
         echo "RELEASE_NAME=Monthly Build (${DATE})" >> $GITHUB_ENV
 
@@ -40,6 +51,5 @@ jobs:
         files: dist/*.tar.gz
         draft: false
         prerelease: false
-        update_release: true  # 自动更新已有 Release（覆盖上传）
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
