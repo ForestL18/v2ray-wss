@@ -49,7 +49,7 @@ echo "[*] Backing up and configuring sysctl..."
 
 # 备份 sysctl.conf（以防万一）
 if [ -f /etc/sysctl.conf ]; then
-    cp /etc/sysctl.conf /etc/sysctl.conf.bak.$(date +%F-%T)
+    mv /etc/sysctl.conf /etc/sysctl.conf.bak.$(date +%F-%T)
 fi
 
 # 使用 /etc/sysctl.d/ 而不是覆盖 /etc/sysctl.conf
