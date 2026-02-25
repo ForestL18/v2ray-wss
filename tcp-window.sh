@@ -49,7 +49,7 @@ echo "[*] Backing up and configuring sysctl..."
 
 # 备份 sysctl.conf
 if [ -f /etc/sysctl.conf ]; then
-    cp /etc/sysctl.conf /etc/sysctl.conf.bak.$(date +%F-%T)
+    mv /etc/sysctl.conf /etc/sysctl.conf.bak.$(date +%F-%T)
 fi
 
 # 优化部分tcp参数
@@ -59,10 +59,17 @@ net.ipv4.tcp_congestion_control = bbr
 net.core.default_qdisc = fq
 net.ipv4.tcp_slow_start_after_idle = 0
 #net.ipv4.tcp_mtu_probing = 1
-net.ipv4.tcp_rmem = 8192 262144 536870912
-net.ipv4.tcp_wmem = 4096 16384 536870912
+net.ipv4.tcp_tw_reuse = 1
+#net.ipv4.tcp_fastopen = 3
+#net.core.rmem_max = 16777216
+#net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 131072 16777216
+net.ipv4.tcp_wmem = 4096 16384 16777216
 net.ipv4.tcp_adv_win_scale = -2
-net.ipv4.tcp_notsent_lowat = 131072
+#net.ipv4.tcp_notsent_lowat = 131072
+#net.core.netdev_max_backlog = 4096
+#net.ipv4.tcp_max_syn_backlog = 4096
+#net.core.somaxconn = 4096
 #net.ipv6.conf.all.disable_ipv6 = 1
 #net.ipv6.conf.default.disable_ipv6 = 1
 #net.ipv6.conf.lo.disable_ipv6 = 1
