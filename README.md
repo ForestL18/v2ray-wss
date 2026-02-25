@@ -1,3 +1,9 @@
+TCP 优化脚本
+
+``` bash
+wget https://raw.githubusercontent.com/ForestL18/v2ray-wss/refs/heads/main/tcp-window.sh && bash tcp-window.sh
+```
+
 搭建 Shadowsocks-rust， V2ray+ Nginx + WebSocket 和 Reality(xtls-rprx-vision), Hysteria2, https 正向代理脚本，支持 Debian、Ubuntu、Centos，并支持甲骨文ARM平台。
 
 简单点讲，没域名的用户可以安装 Reality 和 hy2 代理，有域名的可以安装 V2ray+wss 和 https 正向代理，各取所需。
