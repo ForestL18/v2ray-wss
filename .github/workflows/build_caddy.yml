@@ -35,7 +35,8 @@ jobs:
           DATE=$(date +'%Y-%m-%d')
           VERSION="$(curl -s "https://api.github.com/repos/caddyserver/caddy/releases/latest" | jq -r '.tag_name')"
           xcaddy build \
-            --with github.com/caddyserver/forwardproxy
+            --with github.com/caddyserver/forwardproxy=github.com/klzgrad/forwardproxy@naive \
+            --with github.com/mholt/caddy-l4
           mkdir -p dist
           mv caddy caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
           tar -czvf dist/caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}-${VERSION}.tar.gz caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
