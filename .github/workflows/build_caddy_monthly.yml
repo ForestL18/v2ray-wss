@@ -24,19 +24,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout klzgrad/forwardproxy
-        uses: actions/checkout@v4
-        with:
-          repository: klzgrad/forwardproxy
-          path: forwardproxy-naive
-
-      - name: Checkout caddyserver/caddy
-        uses: actions/checkout@v4
-        with:
-          repository: caddyserver/caddy
-          ref: ${{ env.CADDY_VERSION }}
-          path: .caddy-bbr
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -52,10 +39,7 @@ jobs:
           GOARCH: ${{matrix.jobs.goarch}}
           GOAMD64: ${{matrix.jobs.goamd64}}
         run: |
-          git -C .caddy-bbr apply "$GITHUB_WORKSPACE/forwardproxy-naive/caddy-sing-quic-bbrv1.patch" "$GITHUB_WORKSPACE/forwardproxy-naive/caddy-read-idle-timeout.patch"
-          xcaddy build \
-            --replace github.com/caddyserver/caddy/v2=$GITHUB_WORKSPACE/.caddy-bbr \
-            --with github.com/caddyserver/forwardproxy=$GITHUB_WORKSPACE/forwardproxy-naive \
+          xcaddy build latest \
             --with github.com/mholt/caddy-l4
           mkdir -p dist
           mv caddy caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
