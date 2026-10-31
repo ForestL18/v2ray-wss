@@ -14,8 +14,27 @@ jobs:
           - { goos: linux, goarch: amd64, goamd64: v3, output: amd64-v3 }
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Checkout klzgrad/forwardproxy
+        uses: actions/checkout@v4
+        with:
+          repository: klzgrad/forwardproxy
+          path: forwardproxy-naive
+
+      - name: Get latest Caddy version
+        run: |
+          CADDY_VERSION="$(curl -s "https://api.github.com/repos/caddyserver/caddy/releases/latest" | jq -r '.tag_name')"
+          printf "CADDY_VERSION=%s\n" "$CADDY_VERSION" >> $GITHUB_ENV
+
+      - name: Checkout caddyserver/caddy
+        uses: actions/checkout@v4
+        with:
+          repository: caddyserver/caddy
+          ref: ${{ env.CADDY_VERSION }}
+          path: .caddy-bbr
+      - run: git -C .caddy-bbr apply "$GITHUB_WORKSPACE/forwardproxy-naive/caddy-sing-quic-bbrv1.patch" "$GITHUB_WORKSPACE/forwardproxy-naive/caddy-read-idle-timeout.patch"
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -33,15 +52,15 @@ jobs:
           GOAMD64: ${{matrix.jobs.goamd64}}
         run: |
           DATE=$(date +'%Y-%m-%d')
-          VERSION="$(curl -s "https://api.github.com/repos/caddyserver/caddy/releases/latest" | jq -r '.tag_name')"
           xcaddy build \
-            --with github.com/caddyserver/forwardproxy=github.com/klzgrad/forwardproxy@naive \
+            --replace github.com/caddyserver/caddy/v2=$GITHUB_WORKSPACE/.caddy-bbr \
+            --with github.com/caddyserver/forwardproxy=$GITHUB_WORKSPACE/forwardproxy-naive \
             --with github.com/mholt/caddy-l4
           mkdir -p dist
           mv caddy caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
-          tar -czvf dist/caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}-${VERSION}.tar.gz caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
+          tar -czvf dist/caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}-${CADDY_VERSION}.tar.gz caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
           rm caddy-${{matrix.jobs.goos}}-${{matrix.jobs.output}}
-          echo "RELEASE_TAG=${VERSION}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=${CADDY_VERSION}" >> $GITHUB_ENV
           echo "RELEASE_NAME=Monthly Build (${DATE})" >> $GITHUB_ENV
 
       - name: Create or Update GitHub Release
